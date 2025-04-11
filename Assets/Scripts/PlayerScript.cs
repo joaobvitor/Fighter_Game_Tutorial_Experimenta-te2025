@@ -8,13 +8,18 @@ public class PlayerScript : MonoBehaviour
     private float movement;
     [SerializeField] private float speed = 5;
     [SerializeField] private float jumpForce = 10;
-    private Boolean isAttacking = false;
 
     private enum AnimationState { Idle, Walking, Jumping, Falling};
 
+    private bool canMove { 
+        get {
+            return animator.GetBool("canMove");
+        }
+    }
+
     private Rigidbody2D rb;
     private Collider2D coll;
-    private Animator anim;
+    private Animator animator;
     private LayerMask groundLayer;
     private Collider2D jabHitbox;
     private Collider2D kickHitbox;
@@ -24,7 +29,7 @@ public class PlayerScript : MonoBehaviour
     private void Awake() {
         rb = GetComponent<Rigidbody2D>();
         coll = GetComponent<Collider2D>();
-        anim = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
         groundLayer = LayerMask.GetMask("Ground");
         jabHitbox = transform.Find("Jab").GetComponent<Collider2D>();
         kickHitbox = transform.Find("Kick").GetComponent<Collider2D>();
@@ -37,7 +42,7 @@ public class PlayerScript : MonoBehaviour
     }
 
     private void OnJump(InputValue value) {
-        if (damageable.getInvulnerable() || isAttacking)
+        if (damageable.getInvulnerable() || !canMove)
             return;
         if (IsGrounded()) {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
@@ -45,41 +50,37 @@ public class PlayerScript : MonoBehaviour
     }
 
     private void OnJab(InputValue value) {
-        if (damageable.getInvulnerable() || isAttacking)
+        if (damageable.getInvulnerable() || !canMove)
             return;
-        anim.SetTrigger("jab");
+        animator.SetTrigger("jab");
         StartCoroutine(jab());
     }
 
     IEnumerator jab() {
-        isAttacking = true;
         StopMoving();
         yield return new WaitForSeconds(0.08f);
         jabHitbox.enabled = true;
         yield return new WaitForSeconds(0.12f);
         jabHitbox.enabled = false;
-        isAttacking = false;
     }
 
     private void OnKick(InputValue value) {
-        if (damageable.getInvulnerable() || isAttacking)
+        if (damageable.getInvulnerable() || !canMove)
             return;
-        anim.SetTrigger("kick");
+        animator.SetTrigger("kick");
         StartCoroutine(kick());
     }
 
     IEnumerator kick() {
-        isAttacking = true;
         StopMoving();
         yield return new WaitForSeconds(0.18f);
         kickHitbox.enabled = true;
         yield return new WaitForSeconds(0.2f);
         kickHitbox.enabled = false;
-        isAttacking = false;
     }
 
     private void FixedUpdate() {
-        if (damageable.getInvulnerable() || isAttacking)
+        if (damageable.getInvulnerable() || !canMove)
             return;
         rb.linearVelocity = new Vector2(movement * speed, rb.linearVelocity.y);
         UpdateFacingDirection();
@@ -93,12 +94,12 @@ public class PlayerScript : MonoBehaviour
 
     private void UpdateAnimationState() {
         if (rb.linearVelocityY != 0 && !IsGrounded())
-            anim.SetInteger("state", (int)AnimationState.Jumping);
+            animator.SetInteger("state", (int)AnimationState.Jumping);
         else if (rb.linearVelocityX == 0) {
-            anim.SetInteger("state", (int)AnimationState.Idle);
+            animator.SetInteger("state", (int)AnimationState.Idle);
         }
         else {
-            anim.SetInteger("state", (int)AnimationState.Walking);
+            animator.SetInteger("state", (int)AnimationState.Walking);
         }
     }
 
