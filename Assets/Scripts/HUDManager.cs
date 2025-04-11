@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class HUDManager : MonoBehaviour
 {
@@ -11,23 +12,31 @@ public class HUDManager : MonoBehaviour
     private Slider p2HPBar;
     private TMP_Text middleText;
     private TMP_Text timer;
+    private PlayerInput p1InputController;
+    private PlayerInput p2InputController;
+    private Boolean gameRunning = true;
 
-    private float time = 60;
+    [SerializeField] private float gameTime = 90;
 
     private void Awake() {
         p1HPBar = transform.Find("P1HPBar").GetComponent<Slider>();
         p2HPBar = transform.Find("P2HPBar").GetComponent<Slider>();
         middleText = transform.Find("MiddleText").GetComponent<TMP_Text>();
         timer = transform.Find("Timer").GetComponent<TMP_Text>();
+        p1InputController = GameObject.Find("Player1").GetComponent<PlayerInput>();
+        p2InputController = GameObject.Find("Player2").GetComponent<PlayerInput>();
     }
 
     private void Update()
     {
-        time -= Time.deltaTime;
+        if (!gameRunning)
+            return;
 
-        timer.text = ((int)time).ToString();
+        gameTime -= Time.deltaTime;
 
-        if (time <= 0) {
+        timer.text = ((int)gameTime).ToString();
+
+        if (gameTime <= 0) {
             ShowMiddleText();
         }
     }
@@ -65,9 +74,10 @@ public class HUDManager : MonoBehaviour
     }
 
     IEnumerator endGame() {
-        Time.timeScale = 0;
+        gameRunning = false;
+        p1InputController.SwitchCurrentActionMap("Disabled");
+        p2InputController.SwitchCurrentActionMap("Disabled");
         yield return new WaitForSecondsRealtime(3);
-        Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
     }
 }

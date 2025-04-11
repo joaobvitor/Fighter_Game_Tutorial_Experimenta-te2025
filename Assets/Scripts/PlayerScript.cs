@@ -1,14 +1,16 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System;
 
 public class PlayerScript : MonoBehaviour
 {
     private float movement;
     [SerializeField] private float speed = 5;
     [SerializeField] private float jumpForce = 10;
+    private Boolean isAttacking = false;
 
-    private enum AnimationState { Idle, Walking, Jumping, Falling, Kicking, Punching};
+    private enum AnimationState { Idle, Walking, Jumping, Falling};
 
     private Rigidbody2D rb;
     private Collider2D coll;
@@ -16,6 +18,8 @@ public class PlayerScript : MonoBehaviour
     private LayerMask groundLayer;
     private Collider2D jabHitbox;
     private Collider2D kickHitbox;
+    private PlayerInput inputController;
+    private Damageable damageable;
 
     private void Awake() {
         rb = GetComponent<Rigidbody2D>();
@@ -24,6 +28,8 @@ public class PlayerScript : MonoBehaviour
         groundLayer = LayerMask.GetMask("Ground");
         jabHitbox = transform.Find("Jab").GetComponent<Collider2D>();
         kickHitbox = transform.Find("Kick").GetComponent<Collider2D>();
+        inputController = GetComponent<PlayerInput>();
+        damageable = GetComponent<Damageable>();
     }
 
     private void OnMovement(InputValue value) {
@@ -31,39 +37,58 @@ public class PlayerScript : MonoBehaviour
     }
 
     private void OnJump(InputValue value) {
+        if (damageable.getInvulnerable() || isAttacking)
+            return;
         if (IsGrounded()) {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
     }
 
     private void OnJab(InputValue value) {
+        if (damageable.getInvulnerable() || isAttacking)
+            return;
         anim.SetTrigger("jab");
         StartCoroutine(jab());
     }
 
     IEnumerator jab() {
+        isAttacking = true;
+        StopMoving();
         yield return new WaitForSeconds(0.08f);
         jabHitbox.enabled = true;
         yield return new WaitForSeconds(0.12f);
         jabHitbox.enabled = false;
+        isAttacking = false;
     }
 
     private void OnKick(InputValue value) {
+        if (damageable.getInvulnerable() || isAttacking)
+            return;
         anim.SetTrigger("kick");
         StartCoroutine(kick());
     }
 
     IEnumerator kick() {
+        isAttacking = true;
+        StopMoving();
         yield return new WaitForSeconds(0.18f);
         kickHitbox.enabled = true;
-        yield return new WaitForSeconds(0.12f);
+        yield return new WaitForSeconds(0.2f);
         kickHitbox.enabled = false;
+        isAttacking = false;
     }
 
     private void FixedUpdate() {
+        if (damageable.getInvulnerable() || isAttacking)
+            return;
         rb.linearVelocity = new Vector2(movement * speed, rb.linearVelocity.y);
         UpdateFacingDirection();
         UpdateAnimationState();
+    }
+
+    public void StopMoving() {
+        if (IsGrounded())
+            rb.linearVelocity = new Vector2(0, 0);
     }
 
     private void UpdateAnimationState() {

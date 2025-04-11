@@ -2,7 +2,7 @@
     "name": "Player2Actions",
     "maps": [
         {
-            "name": "InGame",
+            "name": "Enabled",
             "id": "dcbb5994-5e3d-49b9-a295-c496704efc6c",
             "actions": [
                 {
@@ -139,6 +139,34 @@
                     "processors": "",
                     "groups": "",
                     "action": "Kick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Disabled",
+            "id": "8a859d3f-25dc-4818-adf2-6f03c5150688",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "468b08b2-0af0-4e65-91e6-3fb194a17733",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "e4e2a0c1-49a0-4976-8691-c8be09662eac",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
